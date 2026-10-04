@@ -1,6 +1,6 @@
 # code-notes
 
-> keeping somebody's codes
+> My C++ algorithm learning — Luogu practice & contests
 
 洛谷（Luogu）刷题与月赛代码存档，C++ 为主。
 
