@@ -1,0 +1,15 @@
+# 编译产物
+*.exe
+*.o
+*.obj
+*.out
+
+# CPH 本地测试用例
+.cph/
+
+# 编辑器 / 系统
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
