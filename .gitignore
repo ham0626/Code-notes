@@ -13,3 +13,9 @@
 .idea/
 .DS_Store
 Thumbs.db
+
+# 仅保留源代码与说明文档，其余笔记/脚本不纳入版本控制
+*.md
+!README.md
+*.py
+*.txt
