@@ -1,77 +1,62 @@
 #include<bits/stdc++.h>
 using namespace std;
-int n;
+const int MAXN=1e5+5;
+int n,m;
 int timer=0,top=0,gro=0;
-int head[105];
-int dfn[105],low[105],stk[105],belong[105];
-int mapp[105][105];
-bool instk[105];
-int in[105],out[105];//入度 出度
+int head[MAXN];
+long long dfn[MAXN],low[MAXN],siz[MAXN],ans[MAXN];
+bool iscut[MAXN];
 struct Node{
     int fro,to,nxt;
-}edge[5000];
-void tarjan(int u){
+}edge[MAXN*10];
+void tarjan(int u,int fa){
+    siz[u]=1;
+    ans[u]=2*(n-1);
     dfn[u]=low[u]=++timer;
-    instk[u]=true;
-    stk[++top]=u;
+    int child=0;
+    long long sum=0;
     for(int i=head[u];i;i=edge[i].nxt){
         int v=edge[i].to;
+        if(v==fa) continue;
         if(dfn[v]==0){
-            tarjan(v);
+            tarjan(v,u);
             low[u]=min(low[u],low[v]);
+            child++;
+            siz[u]+=siz[v];
+            if(low[v]>=dfn[u]){//只能和当前点联通
+                ans[u]+=2*siz[v]*(n-siz[v]-1-sum);//每个子树看 整体子树可能被切开了
+                sum+=siz[v];
+                iscut[u]=true;
+            }
         }
-        else if(instk[v]==true)//在队里
+        else if(v!=fa){
             low[u]=min(low[u],dfn[v]);
-        else continue;
-    }
-    if(dfn[u]==low[u]){
-        gro++;
-        while(true){
-            int x=stk[top--];
-            instk[x]=false;
-            belong[x]=gro;
-            if(x==u) break;
         }
     }
+    if(child>=2&&fa==0)
+        iscut[u]=true;
     return;
 }
 int main(){
     ios::sync_with_stdio(0);
     cin.tie(0),cout.tie(0);
-    cin>>n;
+    cin>>n>>m;
     int cnt=1;
-    for(int i=1;i<=n;i++){
-        while(true){
-        int v;
-        cin>>v;
-        if(v==0) break;
-        edge[cnt].fro=i,edge[cnt].to=v;
-        edge[cnt].nxt=head[i];
-        head[i]=cnt;
+    for(int i=1;i<=m;i++){
+        int a,b;
+        cin>>a>>b;
+        edge[cnt].fro=a,edge[cnt].to=b;
+        edge[cnt].nxt=head[a];
+        head[a]=cnt;
         cnt++;
-        }
+        edge[cnt].fro=b,edge[cnt].to=a;
+        edge[cnt].nxt=head[b];
+        head[b]=cnt;
+        cnt++;
     }
     for(int i=1;i<=n;i++){
-        if(dfn[i]==0) tarjan(i);
+        if(dfn[i]==0) tarjan(i,0);
     }
-    if(gro==1){
-        cout<<"1"<<'\n'<<"0";
-        return 0;
-    }
-    for(int i=1;i<cnt;i++){
-        int u=edge[i].fro;
-        int v=edge[i].to;
-        if(belong[u]!=belong[v]){
-            out[belong[u]]++;
-            in[belong[v]]++;
-        }
-    }
-    int ans1=0,ans2=0;
-    for(int i=1;i<=gro;i++){
-        if(in[i]==0) ans1++;
-        if(out[i]==0) ans2++;
-    }
-    cout<<ans1<<'\n';
-    cout<<max(ans1,ans2);
+    for(int i=1;i<=n;i++) cout<<ans[i]<<'\n';
     return 0;
 }
