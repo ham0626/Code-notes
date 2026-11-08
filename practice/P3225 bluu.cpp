@@ -87,7 +87,7 @@ void tarjan(int u,int fa){
             }
         }
         else{//搜过但不是父亲:祖先
-            if(dfn[v]<dfn[u]){
+            if(dfn[v]<dfn[u]){//其实是祖先:防止重边
             stk[++top]=i;//进栈
             low[u]=min(dfn[v],low[u]);
             }
