@@ -1,93 +1,75 @@
 #include<bits/stdc++.h>
 using namespace std;
-const int MAXN=2e6+5;
-int n,m,gro;
-int timer,top;
-int head[MAXN];
-int dfn[MAXN],low[MAXN],belong[MAXN],stk[MAXN];
-bool instk[MAXN];
-//点和边都只能属于一个边双->点双/边双要在验证dfn==0的情况压入栈
-//点双可以共割点 边双不能共享边和点
+const int MAXN=2e4+5;
+int n,m;
+int head[MAXN],col[MAXN];//0没颜色 1/2
 struct Node{
-    int fro,to,nxt;
-}edge[2*MAXN];
-void tarjan(int u){
-    dfn[u]=low[u]=++timer;
-    instk[u]=true;
-    stk[++top]=u;
+    int fro,to,val;
+}tmp[200005];
+struct Node2{
+    int fro,to,nxt,val;
+}edge[200005];
+bool dfs(int u){
     for(int i=head[u];i;i=edge[i].nxt){
         int v=edge[i].to;
-        if(dfn[v]==0){
-            tarjan(v);
-            low[u]=min(low[u],low[v]);
-            }
-        else if(instk[v]==true)//*
-            low[u]=min(low[u],dfn[v]);
-    }
-    if(dfn[u]==low[u]){
-        gro++;
-        while(true){
-            int x=stk[top--];
-            instk[x]=false;
-            belong[x]=gro;
-            if(x==u) break;
+        if(col[v]==0){
+            if(col[u]==1) col[v]=2;
+            else col[v]=1;
+            if(dfs(v)==false) return false;
         }
+        else if(col[v]==col[u]) return false;
     }
-    return;
+    return true;
 }
 int main(){
     ios::sync_with_stdio(0);
     cin.tie(0),cout.tie(0);
     cin>>n>>m;
-    int cnt=1;
+    long long sum=0;
     //所有输入的下标表示这个点为真 输入下标+n代表这个点为假
-    for(int k=1;k<=m;k++){
-        int i,a,j,b;
-        cin>>i>>a>>j>>b;
-        //非A->B和非B->A
-        int ri,fi,rj,fj;
-        if(a==1){//统一把1~n当成真
-            ri=i;
-            fi=i+n;
+    for(int i=1;i<=m;i++){
+        int a,b,c;
+        cin>>a>>b>>c;
+        sum+=c;
+        tmp[i].fro=a,tmp[i].to=b,tmp[i].val=c;
+    }
+    long long l=0,r=sum;
+    long long ans=1e18;
+    while(l<=r){
+        long long mid=(l+r)/2;
+        memset(head,0,sizeof(head));
+        memset(edge,0,sizeof(edge));
+        memset(col,0,sizeof(col));
+        int cnt=1;
+        for(int i=1;i<=m;i++){
+            int u=tmp[i].fro,v=tmp[i].to,w=tmp[i].val;
+            if(w>mid){
+                edge[cnt].fro=u,edge[cnt].to=v,edge[cnt].val=w;
+                edge[cnt].nxt=head[u];
+                head[u]=cnt;
+                cnt++;
+                edge[cnt].fro=v,edge[cnt].to=u,edge[cnt].val=w;
+                edge[cnt].nxt=head[v];
+                head[v]=cnt;
+                cnt++;
+            }
         }
+        int flag=0;
+        for(int i=1;i<=n;i++){
+            if(col[i]==0){
+                col[i]=1;
+                if(dfs(i)==false){
+                    flag=1;
+                    break;//不能满足
+                }
+            }
+        }
+        if(flag==1) l=mid+1;
         else{
-            ri=i+n;
-            fi=i;
-        }
-        if(b==1){
-            rj=j;
-            fj=j+n;
-        }
-        else{
-            rj=j+n;
-            fj=j;
-        }
-        edge[cnt].fro=fj,edge[cnt].to=ri;//某一个不成立 另一个必须成立
-        edge[cnt].nxt=head[fj];
-        head[fj]=cnt;
-        cnt++;
-        edge[cnt].fro=fi,edge[cnt].to=rj;
-        edge[cnt].nxt=head[fi];
-        head[fi]=cnt;
-        cnt++;
-    }
-    for(int i=1;i<=2*n;i++){
-        if(dfn[i]==0)
-        tarjan(i);
-    }
-    ///要求某一个点同时为真和假就不行
-    for(int i=1;i<=n;i++){
-        if(belong[i]==belong[i+n]){
-            cout<<"IMPOSSIBLE";
-            return 0;
+            r=mid-1;
+            ans=min(ans,mid);
         }
     }
-    cout<<"POSSIBLE"<<'\n';
-    //把i当成真 就是比较i和i+n哪个belong小 输出小的代表的真/假
-    //永远谁小选谁
-    for(int i=1;i<=n;i++){
-        if(belong[i]<belong[i+n]) cout<<"1 ";//真
-        else cout<<"0 ";//假
-    }
+    cout<<ans;//都能分开会一直往小猜 直到0
     return 0;
 }
